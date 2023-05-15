@@ -1,0 +1,191 @@
+#Aboveground and below ground biomass estimates for trees measured in the
+# Herrell Ecological Preserve
+
+#Start by importing dataset Raw feild data
+
+
+vegdata <- read.csv(file.choose())
+
+attach(vegdata)
+head(vegdata)
+
+
+uniquetree <- unique(vegdata$Species)
+
+bfdata<- subset(vegdata, vegdata$Species == "Abies Balsamea")
+todata <- subset(vegdata, vegdata$Species == "Thuja occidentalis")
+ardata <- subset(vegdata, vegdata$Species == "Acer Rubrum")
+bpdata <- subset(vegdata, vegdata$Species == "Birch (white?)")
+sadata <- subset(vegdata, vegdata$Species == "Speckeld Alder")
+rcdata <-  subset(vegdata, vegdata$Species == "Common Buckthorn")
+
+
+TreeBiomass <- rbind(bfytotal, arytotal, toytotal,bpytotal, saytotal, rcytotal)
+
+# Above Ground Estimates: from Lambert 2004
+
+
+# Equation
+
+yw = bw1*(D^bw2)
+yb = bb1*(D^bb2)
+yf = bf1*(D^bf2)
+ybr = br1*(D^br2)
+ytotal = yw + yb + yf + ybr
+
+#Balsam Fir
+
+bw1 = 0.0534
+bw2 = 2.4030
+bb1 = 0.0115
+bb2 = 2.3484
+br1 = 0.007
+br2 = 2.5406
+bf1= 0.084
+bf2 = 1.6695
+
+bfD <- bfdata$dbh
+bfytotal = 1:length(bfD)
+for (i in 1:length(bfD)){
+yw = bw1*(bfD[i]^bw2)
+yb = bb1*(bfD[i]^bb2)
+yf = bf1*(bfD[i]^bf2)
+ybr = br1*(bfD[i]^br2)
+bfytotal[i] = yw + yb + yf + ybr
+}
+
+bfytotal
+
+
+#Eastern White Cedar
+
+bw1 = 0.0654
+bw2 = 2.2121
+bb1 = 0.0114
+bb2 = 2.1432
+br1 = 0.0335
+br2 = 1.9367
+bf1= 0.0499
+bf2 = 1.7278
+
+toD <- todata$dbh
+toytotal = 1:length(toD)
+for (i in 1:length(toD)){
+  yw = bw1*(toD[i]^bw2)
+  yb = bb1*(toD[i]^bb2)
+  yf = bf1*(toD[i]^bf2)
+  ybr = br1*(toD[i]^br2)
+  toytotal[i] = yw + yb + yf + ybr
+}
+
+toytotal
+
+#Red Maple
+
+bw1 = 0.1014
+bw2 = 2.3448
+bb1 = 0.0291
+bb2 = 2.0893
+br1 = 0.0175
+br2 = 2.4846
+bf1= 0.0515
+bf2 = 1.5198
+
+arD <- ardata$dbh
+arytotal = 1:length(arD)
+for (i in 1:length(arD)){
+  yw = bw1*(arD[i]^bw2)
+  yb = bb1*(arD[i]^bb2)
+  yf = bf1*(arD[i]^bf2)
+  ybr = br1*(arD[i]^br2)
+  arytotal[i] = yw + yb + yf + ybr
+}
+
+arytotal
+
+#White Birch
+
+bw1 = 0.0593
+bw2 = 2.5026
+bb1 = 0.0135
+bb2 = 2.4053
+br1 = 0.0135
+br2 = 2.5532
+bf1= 0.0546
+bf2 = 1.6351
+
+bpD <- bpdata$dbh
+bpytotal = 1:length(bpD)
+for (i in 1:length(bpD)){
+  yw = bw1*(bpD[i]^bw2)
+  yb = bb1*(bpD[i]^bb2)
+  yf = bf1*(bpD[i]^bf2)
+  ybr = br1*(bpD[i]^br2)
+  bpytotal[i] = yw + yb + yf + ybr
+}
+
+bpytotal
+
+
+
+# From Chojnosky et al.
+#Equation
+# ln(biomass) = bo + b1ln(dbh)
+ytotal = bo + b1*ln(D)
+
+# Alder r^2 = 0.81
+bo = -2.2271
+b1 = 2.4513
+
+saD <- sadata$dbh
+saytotal = 1:length(saD)
+for (i in 1:length(saD)){
+  saytotal[i] = bo +b1*(b1*log(saD[i]))
+}
+
+saytotal  
+
+#Buckthorn r^2 = 0.79 - grouped in Rosales
+bo = -2.2118
+b1 = 2.4133
+rcD <- rcdata$dbh
+rcytotal = 1:length(rcD)
+for (i in 1:length(rcD)){
+  rcytotal[i] = bo +b1*(b1*log(rcD[i]))
+}
+
+rcytotal
+
+#Merge Biomass estimates back into single dataframe
+
+TreeBiomass <- c(bfytotal, arytotal,bpytotal,rcytotal, saytotal, toytotal)
+
+
+
+# Carbon Content
+
+# Assume 50% carbon of dry biomass estimates
+
+CarbonMass <- TreeBiomass*0.5
+CarbonMass
+
+vegdataoutput<- data.frame(vegdata, TreeBiomass, CarbonMass)
+
+
+# Summary data:
+
+#Biomass and Carbon per Plot
+
+uniquesite <- unique(vegdataoutput$Site)
+
+vegdb01 <- subset(vegdataoutput, vegdataoutput$Site == "DB-01")
+vegdb02 <- subset(vegdataoutput, vegdataoutput$Site == "DB-02")
+vegdb03 <- subset(vegdataoutput, vegdataoutput$Site == "DB-03")
+
+#Site DB01
+
+Cdb01 = sum(vegdb01$CarbonMass)
+Cdb02 = sum(vegdb02$CarbonMass)
+Cdb03 = sum(vegdb03$CarbonMass)
+
+write.csv(vegdataoutput, "~/Desktop/Manuscript/BiomassCarbon.csv")
