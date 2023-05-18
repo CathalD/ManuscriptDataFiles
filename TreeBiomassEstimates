@@ -27,11 +27,11 @@ TreeBiomass <- rbind(bfytotal, arytotal, toytotal,bpytotal, saytotal, rcytotal)
 
 # Equation
 
-yw = bw1*(D^bw2)
-yb = bb1*(D^bb2)
-yf = bf1*(D^bf2)
-ybr = br1*(D^br2)
-ytotal = yw + yb + yf + ybr
+#yw = bw1*(D^bw2)
+#yb = bb1*(D^bb2)
+#yf = bf1*(D^bf2)
+#ybr = br1*(D^br2)
+#ytotal = yw + yb + yf + ybr
 
 #Balsam Fir
 
@@ -140,7 +140,7 @@ b1 = 2.4513
 saD <- sadata$dbh
 saytotal = 1:length(saD)
 for (i in 1:length(saD)){
-  saytotal[i] = bo +b1*(b1*log(saD[i]))
+  saytotal[i] = bo +b1*(log(saD[i]))
 }
 
 saytotal  
@@ -151,7 +151,7 @@ b1 = 2.4133
 rcD <- rcdata$dbh
 rcytotal = 1:length(rcD)
 for (i in 1:length(rcD)){
-  rcytotal[i] = bo +b1*(b1*log(rcD[i]))
+  rcytotal[i] = bo +b1*(log(rcD[i]))
 }
 
 rcytotal
@@ -189,3 +189,52 @@ Cdb02 = sum(vegdb02$CarbonMass)
 Cdb03 = sum(vegdb03$CarbonMass)
 
 write.csv(vegdataoutput, "~/Desktop/Manuscript/BiomassCarbon.csv")
+
+
+
+#Below ground estimates
+# Course and fine roots estimates
+
+# FRom Chonojsky ey al. 2014
+
+# equation : ln(ratio) ¼ b0 + b1 ln(dbh)
+#Where ratio = component biomass / total above ground biomass
+
+#Course root biomass r^2 = 0.0155
+
+bo = -1.4485
+b1 = -0.03476
+
+CRratio = 1:length(vegdata$dbh)
+for (i in 1:length(vegdata$dbh)){
+  CRratio[i] = exp((bo + b1*log(vegdata$dbh[i])))
+}
+
+CRratio
+
+CRbiomass = CRratio * vegdataoutput$TreeBiomass
+
+CRbiomass
+
+#Fine roots r^2 = 0.69
+
+bo = -1.8629
+b1 = -0.77534
+
+FRratio = 1:length(vegdata$dbh)
+for (i in 1:length(vegdata$dbh)){
+  FRratio[i] = exp((bo + b1*log(vegdata$dbh[i])))
+}
+
+FRratio
+
+FRbiomass = FRratio * vegdataoutput$TreeBiomass
+
+FRbiomass
+
+BGBiomass = CRbiomass + FRbiomass
+
+
+Vegdataoutput2 = cbind(vegdataoutput,BGBiomass)
+
+write.csv(Vegdataoutput2, "~/Desktop/Manuscript/BiomassCarbon2.0.csv")
